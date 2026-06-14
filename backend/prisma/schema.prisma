@@ -1,0 +1,923 @@
+// Anime Community Platform - Prisma Schema
+// PostgreSQL + Full enterprise feature set
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════
+// ХЭРЭГЛЭГЧИЙН СИСТЕМ
+// ═══════════════════════════════════════════
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  username     String    @unique
+  passwordHash String
+  systemId     String    @unique @default(cuid()) // банкны шилжүүлгийн ID
+  displayName  String?
+  avatarUrl    String?
+  isActive     Boolean   @default(true)
+  isBanned     Boolean   @default(false)
+  banReason    String?
+  banUntil     DateTime?
+  isMuted      Boolean   @default(false)
+  muteUntil    DateTime?
+  reputation   Int       @default(100)
+  ipAddress    String?
+  deviceHash   String?   // multi-account detection
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  role         UserRole  @default(USER)
+
+  activeCharacterId    String?
+  characterPoints      Int     @default(0) // season шагналаар авах оноо
+  isEmailVerified      Boolean @default(false)
+
+  // Relations
+  ownedCharacters  UserCharacter[]
+  messages         Message[]
+  attacksGiven     AttackLog[]          @relation("Attacker")
+  attacksReceived  AttackLog[]          @relation("Defender")
+  seasonStats      SeasonStat[]
+  payments         Payment[]
+  guildMembership  GuildMember?
+  reputationLogs   ReputationLog[]
+  miniGameSessions MiniGameSession[]
+  warnings         ModerationWarning[]
+  reportsGiven     Report[]             @relation("Reporter")
+  reportsReceived  Report[]             @relation("Reported")
+  cosmetics        UserCosmetic[]
+  privateChatA     PrivateChat[]        @relation("User1")
+  privateChatB     PrivateChat[]        @relation("User2")
+  analyticsEvents  AnalyticsEvent[]
+  dailyQuests      UserDailyQuest[]
+  achievements     UserAchievement[]
+  notifications    Notification[]
+  loginStreak      LoginStreak?
+  gachaRolls       GachaRoll[]
+  watchlist        AnimeWatchlist[]
+  pushTokens       PushToken[]
+
+  @@index([email])
+  @@index([username])
+  @@index([systemId])
+  @@index([isBanned, isActive])
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+// ═══════════════════════════════════════════
+// ANIME БОЛОН ДҮРИЙН СИСТЕМ
+// ═══════════════════════════════════════════
+
+model Anime {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  description String
+  imageUrl    String
+  bannerUrl   String?
+  isActive    Boolean          @default(true)
+  sortOrder   Int              @default(0)
+  createdAt   DateTime         @default(now())
+
+  characters AnimeCharacter[]
+  chatRoom   AnimeChat?
+  guild      Guild?
+  shardKey   String? // scaling хийх shard identifier
+  watchlist  AnimeWatchlist[]
+
+  @@index([isActive])
+}
+
+// ═══════════════════════════════════════════
+// WATCHLIST СИСТЕМ
+// ═══════════════════════════════════════════
+
+model AnimeWatchlist {
+  id        String          @id @default(uuid())
+  userId    String
+  animeId   String
+  status    WatchlistStatus @default(PLANNING)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  anime Anime @relation(fields: [animeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, animeId])
+  @@index([userId])
+}
+
+enum WatchlistStatus {
+  PLANNING   // Үзэхээр төлөвлөж байна
+  WATCHING   // Одоо үзэж байна
+  COMPLETED  // Үзэж дууссан
+  DROPPED    // Орхисон
+}
+
+// ═══════════════════════════════════════════
+// PUSH TOKEN СИСТЕМ
+// ═══════════════════════════════════════════
+
+model PushToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  platform  String   @default("expo")
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AnimeCharacter {
+  id              String        @id @default(uuid())
+  animeId         String
+  name            String
+  description     String
+  avatarUrl       String
+  fullImageUrl    String?
+  isBaseForm      Boolean       @default(false) // энэ нь үнэгүй
+  parentId        String?       // base form-ийн advanced хувилбар
+  price           Int           @default(0) // MNT
+  characterPoints Int           @default(0) // CP alternative price
+  isActive        Boolean       @default(true)
+  sortOrder       Int           @default(0)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  anime      Anime           @relation(fields: [animeId], references: [id])
+  parent     AnimeCharacter? @relation("CharacterForms", fields: [parentId], references: [id])
+  variants   AnimeCharacter[] @relation("CharacterForms")
+  skills     Skill[]
+  ownedBy    UserCharacter[]
+  gachaPools GachaPoolItem[]
+
+  @@index([animeId])
+  @@index([isBaseForm, isActive])
+}
+
+model UserCharacter {
+  id          String         @id @default(uuid())
+  userId      String
+  characterId String
+  level       Int            @default(1)
+  xp          Int            @default(0)
+  masteryTier MasteryTier    @default(BRONZE)
+  isActive    Boolean        @default(false) // одоогийн идэвхтэй дүр
+  unlockedAt  DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  character AnimeCharacter @relation(fields: [characterId], references: [id])
+
+  @@unique([userId, characterId])
+  @@index([userId, isActive])
+}
+
+enum MasteryTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
+}
+
+// XP level threshold тооцоолол: [0, 100, 250, 500, 1000, 2000, 4000, 8000, 15000, 30000, ...]
+// Level-ийг seed дотор тодорхойлно, enum биш (flexible)
+
+// ═══════════════════════════════════════════
+// SKILL + ENERGY СИСТЕМ
+// ═══════════════════════════════════════════
+
+model Skill {
+  id              String      @id @default(uuid())
+  characterId     String
+  name            String
+  description     String
+  damageMin       Int
+  damageMax       Int
+  energyCost      Int
+  cooldownSeconds Int
+  animationUrl    String
+  effectType      SkillEffect
+  requiredLevel   Int         @default(1)
+  requiredTier    MasteryTier @default(BRONZE)
+  isUltimate      Boolean     @default(false)
+  isActive        Boolean     @default(true)
+
+  character AnimeCharacter @relation(fields: [characterId], references: [id])
+
+  @@index([characterId])
+}
+
+enum SkillEffect {
+  FIRE
+  WATER
+  LIGHTNING
+  WIND
+  DARK
+  LIGHT
+  EARTH
+  VOID
+  RASENGAN
+  SHARINGAN
+  SPIRIT
+  ICE
+}
+
+// ═══════════════════════════════════════════
+// CHAT СИСТЕМ
+// ═══════════════════════════════════════════
+
+model ChatRoom {
+  id        String   @id @default(uuid())
+  type      ChatType
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  messages    Message[]
+  animeChat   AnimeChat?
+  privateChat PrivateChat?
+  guildRoom   Guild?       @relation("GuildChat")
+
+  @@index([type, isActive])
+}
+
+enum ChatType {
+  ALL
+  ANIME
+  PRIVATE
+  GUILD
+}
+
+model AnimeChat {
+  id         String   @id @default(uuid())
+  animeId    String   @unique
+  chatRoomId String   @unique
+
+  anime    Anime    @relation(fields: [animeId], references: [id])
+  chatRoom ChatRoom @relation(fields: [chatRoomId], references: [id])
+}
+
+model PrivateChat {
+  id         String   @id @default(uuid())
+  user1Id    String
+  user2Id    String
+  chatRoomId String   @unique
+  createdAt  DateTime @default(now())
+
+  user1    User     @relation("User1", fields: [user1Id], references: [id])
+  user2    User     @relation("User2", fields: [user2Id], references: [id])
+  chatRoom ChatRoom @relation(fields: [chatRoomId], references: [id])
+
+  @@unique([user1Id, user2Id])
+}
+
+model Message {
+  id           String   @id @default(uuid())
+  roomId       String
+  senderId     String
+  content      String   @db.Text
+  isDeleted    Boolean  @default(false)
+  isFiltered   Boolean  @default(false)
+  filterReason String?
+  metadata     Json?    // { characterId, cosmeticEffect, level }
+  createdAt    DateTime @default(now())
+
+  room   ChatRoom @relation(fields: [roomId], references: [id])
+  sender User     @relation(fields: [senderId], references: [id])
+
+  @@index([roomId, createdAt(sort: Desc)])
+  @@index([senderId, createdAt])
+}
+
+// ═══════════════════════════════════════════
+// SEASON + ATTACK EVENT СИСТЕМ
+// ═══════════════════════════════════════════
+
+model Season {
+  id           String    @id @default(uuid())
+  number       Int       @unique
+  startDate    DateTime
+  endDate      DateTime
+  isActive     Boolean   @default(false)
+  isArchived   Boolean   @default(false)
+  winnerId     String?
+  winnerType   WinnerType @default(MOST_HP)
+  rewardPoints Int       @default(500) // ялагчийн character point шагнал
+  createdAt    DateTime  @default(now())
+
+  stats      SeasonStat[]
+  attackLogs AttackLog[]
+
+  @@index([isActive])
+  @@index([startDate, endDate])
+}
+
+enum WinnerType {
+  MOST_HP    // хамгийн их HP-тэй
+  LAST_ALIVE // хамгийн сүүлд амьд
+  MOST_KILLS // хамгийн олон kill
+}
+
+model SeasonStat {
+  id               String   @id @default(uuid())
+  seasonId         String
+  userId           String
+  hp               Int      @default(1000)
+  maxHp            Int      @default(1000)
+  attackPoint      Int      @default(100)
+  energy           Int      @default(100)
+  maxEnergy        Int      @default(100)
+  energyLastRefill DateTime @default(now())
+  kills            Int      @default(0)
+  deaths           Int      @default(0)
+  rank             Int?
+  isEliminated     Boolean  @default(false)
+  eliminatedAt     DateTime?
+  characterPoints  Int      @default(0) // season дотор олсон CP
+
+  season Season @relation(fields: [seasonId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([seasonId, userId])
+  @@index([seasonId, hp(sort: Desc)])
+  @@index([seasonId, kills(sort: Desc)])
+}
+
+model AttackLog {
+  id               String   @id @default(uuid())
+  seasonId         String
+  attackerId       String
+  defenderId       String
+  skillId          String?
+  damageDealt      Int
+  attackerHpBefore Int
+  defenderHpBefore Int
+  attackerHpAfter  Int
+  defenderHpAfter  Int
+  isKill           Boolean  @default(false)
+  replayData       Json?    // animation sequence for replay
+  createdAt        DateTime @default(now())
+
+  season   Season @relation(fields: [seasonId], references: [id])
+  attacker User   @relation("Attacker", fields: [attackerId], references: [id])
+  defender User   @relation("Defender", fields: [defenderId], references: [id])
+
+  @@index([seasonId, createdAt])
+  @@index([attackerId, seasonId])
+  @@index([defenderId, seasonId])
+}
+
+// ═══════════════════════════════════════════
+// PAYMENT СИСТЕМ
+// ═══════════════════════════════════════════
+
+model Payment {
+  id              String        @id @default(uuid())
+  userId          String
+  characterId     String?
+  cosmeticItemId  String?
+  amount          Int           // MNT
+  method          PaymentMethod
+  status          PaymentStatus @default(PENDING)
+  qpayInvoiceId   String?
+  qpayQrCode      String?       @db.Text
+  qpayDeepLink    String?
+  bankTransferRef String?       // хэрэглэгч бичсэн reference
+  adminNotes      String?
+  adminVerifiedBy String?
+  adminVerifiedAt DateTime?
+  failReason      String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, status])
+  @@index([status, method])
+  @@index([qpayInvoiceId])
+}
+
+enum PaymentMethod {
+  QPAY
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+// ═══════════════════════════════════════════
+// MINI GAME СИСТЕМ
+// ═══════════════════════════════════════════
+
+model MiniGame {
+  id            String       @id @default(uuid())
+  name          String
+  description   String
+  type          MiniGameType
+  maxReward     Int          // attack points
+  minReward     Int
+  cooldownMin   Int          @default(60)
+  dailyCap      Int          @default(500) // өдөрт авах max AP
+  isActive      Boolean      @default(true)
+  sortOrder     Int          @default(0)
+  createdAt     DateTime     @default(now())
+
+  sessions MiniGameSession[]
+}
+
+enum MiniGameType {
+  REACTION // хурдан дарах
+  QUIZ     // anime quiz
+  DODGE    // зайлах
+  IDENTIFY // дүрс таних
+}
+
+model MiniGameSession {
+  id         String   @id @default(uuid())
+  gameId     String
+  userId     String
+  score      Int
+  reward     Int      // attack points earned
+  duration   Int      // milliseconds
+  isValid    Boolean  @default(true)
+  cheatFlags Json?    // { tooFast, impossibleScore, botPattern }
+  serverSeed String?  // anti-cheat verification
+  createdAt  DateTime @default(now())
+
+  game MiniGame @relation(fields: [gameId], references: [id])
+  user User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([gameId, userId])
+}
+
+// ═══════════════════════════════════════════
+// GUILD СИСТЕМ
+// ═══════════════════════════════════════════
+
+model Guild {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  animeId     String   @unique
+  description String?
+  badgeUrl    String?
+  level       Int      @default(1)
+  xp          Int      @default(0)
+  chatRoomId  String?  @unique
+  maxMembers  Int      @default(50)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  anime    Anime        @relation(fields: [animeId], references: [id])
+  members  GuildMember[]
+  chatRoom ChatRoom?    @relation("GuildChat", fields: [chatRoomId], references: [id])
+  warsAsAttacker GuildWar[] @relation("GuildWarAttacker")
+  warsAsDefender GuildWar[] @relation("GuildWarDefender")
+
+  @@index([animeId])
+}
+
+model GuildMember {
+  id       String    @id @default(uuid())
+  guildId  String
+  userId   String    @unique
+  role     GuildRole @default(MEMBER)
+  joinedAt DateTime  @default(now())
+
+  guild Guild @relation(fields: [guildId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([guildId, role])
+}
+
+enum GuildRole {
+  LEADER
+  OFFICER
+  MEMBER
+}
+
+// ═══════════════════════════════════════════
+// COSMETIC ITEM СИСТЕМ
+// ═══════════════════════════════════════════
+
+model CosmeticItem {
+  id          String       @id @default(uuid())
+  name        String
+  description String
+  type        CosmeticType
+  imageUrl    String
+  effectUrl   String?
+  animationCss String?
+  price       Int          // MNT
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+
+  ownedBy UserCosmetic[]
+}
+
+enum CosmeticType {
+  AVATAR_FRAME
+  CHAT_ANIMATION
+  KILL_EFFECT
+  PROFILE_BACKGROUND
+}
+
+model UserCosmetic {
+  id          String   @id @default(uuid())
+  userId      String
+  itemId      String
+  isEquipped  Boolean  @default(false)
+  slot        CosmeticType
+  purchasedAt DateTime @default(now())
+
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item CosmeticItem @relation(fields: [itemId], references: [id])
+
+  @@unique([userId, itemId])
+  @@index([userId, isEquipped])
+}
+
+// ═══════════════════════════════════════════
+// MODERATION СИСТЕМ
+// ═══════════════════════════════════════════
+
+model ModerationWarning {
+  id        String   @id @default(uuid())
+  userId    String
+  reason    String
+  messageId String?
+  adminId   String?
+  isAuto    Boolean  @default(true)
+  severity  WarningSeverity @default(LOW)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+}
+
+enum WarningSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model Report {
+  id         String       @id @default(uuid())
+  reporterId String
+  reportedId String
+  messageId  String?
+  reason     String
+  details    String?      @db.Text
+  status     ReportStatus @default(PENDING)
+  adminId    String?
+  adminNotes String?
+  resolvedAt DateTime?
+  createdAt  DateTime     @default(now())
+
+  reporter User @relation("Reporter", fields: [reporterId], references: [id])
+  reported User @relation("Reported", fields: [reportedId], references: [id])
+
+  @@index([status, createdAt])
+  @@index([reportedId])
+}
+
+enum ReportStatus {
+  PENDING
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+// ═══════════════════════════════════════════
+// REPUTATION СИСТЕМ
+// ═══════════════════════════════════════════
+
+model ReputationLog {
+  id        String         @id @default(uuid())
+  userId    String
+  change    Int
+  reason    ReputationReason
+  details   String?
+  createdAt DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+}
+
+enum ReputationReason {
+  LIKE_RECEIVED
+  REPORT_CONFIRMED
+  SPAM_DETECTED
+  PROFANITY_DETECTED
+  FAIR_PLAY_BONUS
+  ADMIN_ADJUSTMENT
+}
+
+// ═══════════════════════════════════════════
+// LEADERBOARD SNAPSHOT
+// ═══════════════════════════════════════════
+
+model LeaderboardSnapshot {
+  id        String          @id @default(uuid())
+  type      LeaderboardType
+  seasonId  String?
+  animeId   String?
+  data      Json            // [{rank, userId, username, score, characterName}]
+  createdAt DateTime        @default(now())
+
+  @@index([type, seasonId])
+  @@index([createdAt(sort: Desc)])
+}
+
+enum LeaderboardType {
+  WEEKLY_ATTACK
+  MINI_GAME_DAILY
+  CHARACTER_MASTERY
+  ANIME_SPECIFIC
+  GUILD_RANKING
+}
+
+// ═══════════════════════════════════════════
+// ANALYTICS
+// ═══════════════════════════════════════════
+
+model AnalyticsEvent {
+  id        String   @id @default(uuid())
+  userId    String?
+  eventType String
+  payload   Json
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([eventType, createdAt])
+  @@index([userId, createdAt])
+}
+
+// ═══════════════════════════════════════════
+// BANK CONFIG (Admin зөвхөн)
+// ═══════════════════════════════════════════
+
+model BankConfig {
+  id          String   @id @default(uuid())
+  bankName    String
+  accountName String
+  accountNo   String
+  isActive    Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+}
+
+// ═══════════════════════════════════════════
+// DAILY QUEST СИСТЕМ
+// ═══════════════════════════════════════════
+
+model DailyQuest {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  type        QuestType
+  target      Int
+  rewardAp    Int       @default(0)
+  rewardCp    Int       @default(0)
+  rewardXp    Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  userQuests UserDailyQuest[]
+}
+
+enum QuestType {
+  ATTACK_ENEMIES
+  PLAY_GAMES
+  SEND_MESSAGES
+  EARN_AP
+  WIN_GAMES
+}
+
+model UserDailyQuest {
+  id        String   @id @default(uuid())
+  userId    String
+  questId   String
+  progress  Int      @default(0)
+  completed Boolean  @default(false)
+  claimedAt DateTime?
+  date      String   // YYYY-MM-DD format
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quest DailyQuest @relation(fields: [questId], references: [id])
+
+  @@unique([userId, questId, date])
+  @@index([userId, date])
+}
+
+// ═══════════════════════════════════════════
+// ACHIEVEMENT СИСТЕМ
+// ═══════════════════════════════════════════
+
+model Achievement {
+  id          String          @id @default(uuid())
+  key         String          @unique
+  title       String
+  description String
+  icon        String
+  category    AchievCategory
+  rarity      AchievRarity    @default(COMMON)
+  rewardCp    Int             @default(0)
+  target      Int             @default(1)
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+
+  userAchievements UserAchievement[]
+}
+
+enum AchievCategory {
+  COMBAT
+  SOCIAL
+  COLLECTION
+  MASTERY
+  SEASONAL
+  SPECIAL
+}
+
+enum AchievRarity {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+model UserAchievement {
+  id            String    @id @default(uuid())
+  userId        String
+  achievementId String
+  progress      Int       @default(0)
+  unlockedAt    DateTime?
+  claimedAt     DateTime?
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id])
+
+  @@unique([userId, achievementId])
+  @@index([userId, unlockedAt])
+}
+
+// ═══════════════════════════════════════════
+// NOTIFICATION СИСТЕМ
+// ═══════════════════════════════════════════
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  imageUrl  String?
+  actionUrl String?
+  isRead    Boolean          @default(false)
+  metadata  Json?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+}
+
+enum NotificationType {
+  ATTACK_RECEIVED
+  ACHIEVEMENT_UNLOCKED
+  QUEST_COMPLETED
+  GUILD_INVITE
+  SEASON_START
+  SEASON_END
+  PAYMENT_CONFIRMED
+  SYSTEM
+  GUILD_WAR
+}
+
+// ═══════════════════════════════════════════
+// LOGIN STREAK СИСТЕМ
+// ═══════════════════════════════════════════
+
+model LoginStreak {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  currentStreak Int     @default(1)
+  longestStreak Int     @default(1)
+  lastLoginDate String  // YYYY-MM-DD
+  totalDays    Int      @default(1)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ═══════════════════════════════════════════
+// GUILD WAR СИСТЕМ
+// ═══════════════════════════════════════════
+
+model GuildWar {
+  id            String       @id @default(uuid())
+  attackerGuildId String
+  defenderGuildId String
+  status        GuildWarStatus @default(PENDING)
+  startTime     DateTime?
+  endTime       DateTime?
+  attackerScore Int          @default(0)
+  defenderScore Int          @default(0)
+  winnerId      String?
+  createdAt     DateTime     @default(now())
+
+  attackerGuild Guild @relation("GuildWarAttacker", fields: [attackerGuildId], references: [id])
+  defenderGuild Guild @relation("GuildWarDefender", fields: [defenderGuildId], references: [id])
+  attacks       GuildWarAttack[]
+}
+
+enum GuildWarStatus {
+  PENDING
+  ACCEPTED
+  ACTIVE
+  FINISHED
+  CANCELLED
+}
+
+model GuildWarAttack {
+  id          String   @id @default(uuid())
+  warId       String
+  attackerId  String
+  defenderId  String
+  damage      Int
+  guildId     String
+  createdAt   DateTime @default(now())
+
+  war GuildWar @relation(fields: [warId], references: [id])
+}
+
+// ═══════════════════════════════════════════
+// GACHA СИСТЕМ
+// ═══════════════════════════════════════════
+
+model GachaPool {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  costCp      Int      @default(100)
+  costType    String   @default("CP")
+  isActive    Boolean  @default(true)
+  bannerUrl   String?
+  createdAt   DateTime @default(now())
+
+  items  GachaPoolItem[]
+  rolls  GachaRoll[]
+}
+
+model GachaPoolItem {
+  id          String  @id @default(uuid())
+  poolId      String
+  characterId String
+  weight      Int     @default(100)
+  rarity      String  @default("COMMON")
+
+  pool      GachaPool        @relation(fields: [poolId], references: [id])
+  character AnimeCharacter   @relation(fields: [characterId], references: [id])
+}
+
+model GachaRoll {
+  id          String   @id @default(uuid())
+  userId      String
+  poolId      String
+  characterId String
+  rarity      String
+  pityCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pool      GachaPool @relation(fields: [poolId], references: [id])
+}

@@ -1,0 +1,60 @@
+# ─── Dependencies ───────────────────────────────
+node_modules/
+**/node_modules/
+.pnp
+.pnp.js
+
+# ─── Environment / secrets ──────────────────────
+.env
+**/.env
+.env.local
+.env.*.local
+!**/.env.example
+
+# ─── Builds / output ────────────────────────────
+dist/
+build/
+.next/
+out/
+**/dist/
+**/build/
+**/.next/
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# ─── Expo / React Native ────────────────────────
+.expo/
+.expo-shared/
+**/.expo/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# ─── Uploads / generated ────────────────────────
+backend/uploads/
+uploads/
+
+# ─── Logs ───────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── Prisma ─────────────────────────────────────
+# (keep schema + migrations, ignore local db)
+*.db
+*.sqlite
+
+# ─── OS / editor ────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# ─── Misc ───────────────────────────────────────
+coverage/
+.cache/

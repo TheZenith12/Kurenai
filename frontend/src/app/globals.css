@@ -1,0 +1,684 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-inter: 'Inter', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #020008;
+  background-image:
+    radial-gradient(ellipse 55% 40% at 15% 0%,   rgba(220,38,38,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 35% at 85% 100%,  rgba(255,140,0,0.07) 0%, transparent 50%),
+    radial-gradient(ellipse 70% 50% at 50% 50%,   rgba(56,189,248,0.04) 0%, transparent 60%);
+  background-attachment: fixed;
+  color: hsl(220, 20%, 95%);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── Scrollbar ───────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: hsl(225, 24%, 10%); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #8B5CF6, #EC4899);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover { background: hsl(258,90%,68%); }
+
+/* ─── Selection ───────────────────────────────────── */
+::selection { background: hsl(258, 80%, 55%); color: white; }
+
+/* ─── Glow Text (logo) ─────────────────────────────── */
+.glow-text {
+  text-shadow: 0 0 10px rgba(220,38,38,0.7), 0 0 20px rgba(220,38,38,0.4);
+}
+
+.glow-text-gold {
+  text-shadow:
+    0 0 10px hsl(45, 100%, 70%),
+    0 0 20px hsl(45, 100%, 50%);
+}
+
+.glow-text-red {
+  text-shadow:
+    0 0 10px hsl(0, 90%, 70%),
+    0 0 20px hsl(0, 90%, 50%);
+}
+
+/* ─── Skill Effects ───────────────────────────────── */
+.skill-fire { filter: drop-shadow(0 0 10px #ff4500); }
+.skill-lightning { filter: drop-shadow(0 0 10px #ffd700); }
+.skill-dark { filter: drop-shadow(0 0 10px #6600cc); }
+.skill-water { filter: drop-shadow(0 0 10px #00bfff); }
+.skill-wind { filter: drop-shadow(0 0 10px #98fb98); }
+.skill-spirit { filter: drop-shadow(0 0 10px #ff69b4); }
+
+/* ─── HP Bar ──────────────────────────────────────── */
+.hp-bar {
+  background: linear-gradient(90deg, #ff0040, #ff4444);
+  box-shadow: 0 0 8px rgba(255, 0, 64, 0.6);
+  transition: width 0.5s ease-out;
+}
+
+.energy-bar {
+  background: linear-gradient(90deg, #0088ff, #00ccff);
+  box-shadow: 0 0 8px rgba(0, 136, 255, 0.6);
+  transition: width 0.5s ease-out;
+}
+
+/* ─── Character Card Hover ────────────────────────── */
+.character-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.character-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 8px 32px rgba(140, 0, 255, 0.3);
+}
+
+/* ─── Glass Effect ────────────────────────────────── */
+.glass {
+  background: rgba(4,0,10,0.70);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* ─── Gradient Borders ────────────────────────────── */
+.gradient-border {
+  position: relative;
+  background-clip: padding-box;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, #8B5CF6, #EC4899);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ─── Tier Colors ─────────────────────────────────── */
+.tier-bronze  { color: #d97706; }
+.tier-silver  { color: #cbd5e1; }
+.tier-gold    { color: #fbbf24; text-shadow: 0 0 8px rgba(251,191,36,0.5); }
+.tier-platinum{ color: #c4b5fd; text-shadow: 0 0 8px rgba(196,181,253,0.5); }
+.tier-diamond { color: #67e8f9; text-shadow: 0 0 10px rgba(103,232,249,0.7), 0 0 20px rgba(103,232,249,0.3); animation: energyPulse 1.5s ease-in-out infinite; }
+
+/* ─── Chat Message Animation ─────────────────────── */
+.message-enter {
+  animation: slideUp 0.2s ease-out;
+}
+
+/* ─── Loading Spinner ─────────────────────────────── */
+.anime-spinner {
+  border: 3px solid rgba(255,255,255,0.08);
+  border-top-color: hsl(258, 90%, 66%);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  box-shadow: 0 0 8px rgba(124,58,237,0.4);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Anime Background Animations ────────────────── */
+@keyframes floatParticle {
+  0%   { transform: translateY(0) translateX(0);    opacity: 0; }
+  5%   { opacity: 0.9; }
+  95%  { opacity: 0.4; }
+  100% { transform: translateY(-110vh) translateX(var(--dx, 15px)); opacity: 0; }
+}
+
+@keyframes ringExpand {
+  0%   { transform: translate(-50%, -50%) scale(0.15); opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) scale(6);    opacity: 0; }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50%       { opacity: 1;    transform: scale(1.5); }
+}
+
+@keyframes slowDrift {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(30px, -20px) scale(1.08); }
+  66%  { transform: translate(-15px, 15px) scale(0.95); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes shimmerLine {
+  0%   { transform: translateX(-120%) skewX(-20deg); opacity: 0; }
+  20%  { opacity: 0.7; }
+  100% { transform: translateX(220%) skewX(-20deg); opacity: 0; }
+}
+
+/* CRT / anime scan-line overlay */
+.anime-scanlines {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 3px
+  );
+  pointer-events: none;
+}
+
+/* ─── Hero Battle Background Animations ─────────────────── */
+
+/* Cinematic Ken Burns — bigger range, more dramatic */
+@keyframes kenBurns {
+  0%   { transform: scale(1.04) translate(0%,     0%); }
+  25%  { transform: scale(1.10) translate(-1.2%, -0.8%); }
+  55%  { transform: scale(1.13) translate( 0.6%, -1.4%); }
+  80%  { transform: scale(1.08) translate(-0.4%,  0.5%); }
+  100% { transform: scale(1.04) translate(0%,     0%); }
+}
+
+/* Red energy bloom — Sukuna's malevolent shrine */
+@keyframes energyPulseRed {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  40%       { opacity: 0.80; transform: scale(1.08); }
+  70%       { opacity: 0.55; transform: scale(1.03); }
+}
+
+/* Blue energy bloom — Gojo's Limitless */
+@keyframes energyPulseBlue {
+  0%, 100% { opacity: 0.35; transform: scale(1)    translateX(0); }
+  50%       { opacity: 0.70; transform: scale(1.06) translateX(10px); }
+}
+
+/* ─── Gojo's Infinity Rings ─────────────────── */
+@keyframes gojoRing {
+  0%   { transform: translate(-50%, -50%) scale(0.1);  opacity: 0.9; }
+  60%  { opacity: 0.45; }
+  100% { transform: translate(-50%, -50%) scale(6.0);  opacity: 0; }
+}
+
+/* ─── Gojo's energy arm sweeping ─────────────── */
+@keyframes gojoArm {
+  0%   { transform: rotate(-25deg) scaleX(0.4); opacity: 0; }
+  18%  { transform: rotate(-8deg)  scaleX(1.0); opacity: 0.95; }
+  55%  { transform: rotate(12deg)  scaleX(1.2); opacity: 0.70; }
+  85%  { transform: rotate(-15deg) scaleX(0.7); opacity: 0.30; }
+  100% { transform: rotate(-25deg) scaleX(0.4); opacity: 0; }
+}
+
+/* ─── Sukuna's Cleave slash sweeping in ──────── */
+@keyframes sukunaSlash {
+  0%          { clip-path: inset(0 100% 0 0); opacity: 0; }
+  8%          { opacity: 1; }
+  28%         { clip-path: inset(0 0%   0 0); opacity: 1; }
+  65%, 100%   { clip-path: inset(0 0%   0 0); opacity: 0; }
+}
+
+/* ─── Sukuna arm thrust ───────────────────────── */
+@keyframes sukunaArm {
+  0%   { transform: rotate(-42deg) scaleX(0.2); opacity: 0; }
+  12%  { transform: rotate(-38deg) scaleX(1.0); opacity: 1; }
+  45%  { transform: rotate(-44deg) scaleX(1.15); opacity: 0.85; }
+  80%  { transform: rotate(-40deg) scaleX(0.5); opacity: 0.30; }
+  100% { transform: rotate(-42deg) scaleX(0.2); opacity: 0; }
+}
+
+/* ─── Black Flash — brief white strobe ───────── */
+@keyframes blackFlash {
+  0%, 82%, 100% { opacity: 0; }
+  84%            { opacity: 0.40; }
+  85%            { opacity: 0.05; }
+  87%            { opacity: 0.25; }
+  89%            { opacity: 0; }
+}
+
+/* ─── Collision burst at impact point ─────────── */
+@keyframes collisionBurst {
+  0%, 100% { transform: translate(-50%,-50%) scale(0.6); opacity: 0.2; }
+  50%       { transform: translate(-50%,-50%) scale(1.4); opacity: 0.9; }
+}
+
+/* Horizontal speed-lines shooting right → left */
+@keyframes speedLine {
+  0%   { transform: translateX(110%); opacity: 0; }
+  4%   { opacity: 0.9; }
+  96%  { opacity: 0.5; }
+  100% { transform: translateX(-110%); opacity: 0; }
+}
+
+/* Atmospheric fog drifting left → right */
+@keyframes fogDrift {
+  0%   { transform: translateX(-8%); opacity: 0; }
+  12%  { opacity: 0.55; }
+  88%  { opacity: 0.35; }
+  100% { transform: translateX(108%); opacity: 0; }
+}
+
+/* ─── Damage Number Float ─────────────────────────── */
+@keyframes damageFloat {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-80px) scale(1.5); opacity: 0; }
+}
+
+.damage-number {
+  animation: damageFloat 1.5s ease-out forwards;
+  pointer-events: none;
+}
+
+/* ─── Hero Background Image — Responsive ────────────── */
+.hero-bg-img {
+  position: absolute;
+  inset: 0;
+  background-image: url(/hero-bg.jpg);
+  background-size: cover;
+  background-repeat: no-repeat;
+  /* Desktop: тулааны голчлон харуулна */
+  background-position: 38% 22%;
+  animation: kenBurns 32s ease-in-out infinite;
+  filter: brightness(1.05) contrast(1.08) saturate(1.45);
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .hero-bg-img {
+    background-position: 42% 20%;
+  }
+}
+
+/* Mobile portrait — дунд хэсгийг (тулаан) харуулна */
+@media (max-width: 768px) {
+  .hero-bg-img {
+    background-position: 46% 18%;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+  .hero-bg-img {
+    background-position: 50% 15%;
+  }
+}
+
+/* ─── Gojo/Sukuna overlay — mobile hide ────────────── */
+/* Утасан дэлгэцэнд том overlay элементүүдийг нуух */
+@media (max-width: 768px) {
+  .battle-fx-desktop {
+    display: none;
+  }
+}
+
+/* ─── Mastery Tiers Background ────────────────────── */
+.tier-bg-bronze { background: linear-gradient(135deg, #3d2000, #5a3000); }
+.tier-bg-silver { background: linear-gradient(135deg, #1a1a2e, #2a2a4e); }
+.tier-bg-gold { background: linear-gradient(135deg, #2a1f00, #4a3a00); }
+.tier-bg-platinum { background: linear-gradient(135deg, #0a0a20, #1a1a3a); }
+.tier-bg-diamond {
+  background: linear-gradient(135deg, #001525, #002a45);
+  box-shadow: inset 0 0 20px rgba(0, 191, 255, 0.1);
+}
+
+/* ─── Mobile Utilities ────────────────────────────── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* iOS safe area bottom padding */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Mobile tap highlight remove */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile bottom nav height consideration */
+@media (max-width: 768px) {
+  .mobile-scroll-container {
+    overscroll-behavior: contain;
+  }
+}
+
+/* ─── Premium Design Utilities ─────────────────────── */
+
+/* Gradient text utility */
+.gradient-text-purple {
+  background: linear-gradient(135deg, #8B5CF6, #EC4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-pink {
+  background: linear-gradient(135deg, #EC4899, #8B5CF6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-gold {
+  background: linear-gradient(135deg, #f59e0b, #fde68a, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-red {
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Premium card glow */
+.card-glow-purple { box-shadow: 0 0 0 1px rgba(168,85,247,0.2), 0 4px 24px rgba(168,85,247,0.12); }
+.card-glow-gold   { box-shadow: 0 0 0 1px rgba(245,158,11,0.3), 0 4px 24px rgba(245,158,11,0.15); }
+.card-glow-red    { box-shadow: 0 0 0 1px rgba(239,68,68,0.25), 0 4px 24px rgba(239,68,68,0.12); }
+.card-glow-blue   { box-shadow: 0 0 0 1px rgba(6,182,212,0.2), 0 4px 24px rgba(6,182,212,0.1); }
+.card-glow-green  { box-shadow: 0 0 0 1px rgba(34,197,94,0.2), 0 4px 24px rgba(34,197,94,0.1); }
+
+/* Rank-1 golden shimmer */
+@keyframes goldShimmer {
+  0%,100% { opacity:0.6; }
+  50%      { opacity:1; }
+}
+.rank-1-glow {
+  box-shadow: 0 0 0 1px rgba(245,158,11,0.5), 0 0 20px rgba(245,158,11,0.2);
+  animation: goldShimmer 2s ease-in-out infinite;
+}
+
+/* Stat number big display */
+.stat-number {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* Premium section header */
+.section-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* HP bar with glow */
+.hp-bar-glow {
+  background: linear-gradient(90deg, #dc2626, #ef4444);
+  box-shadow: 0 0 8px rgba(239,68,68,0.6), 0 0 16px rgba(239,68,68,0.3);
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+.hp-bar-warn {
+  background: linear-gradient(90deg, #d97706, #f59e0b);
+  box-shadow: 0 0 8px rgba(245,158,11,0.6);
+}
+.hp-bar-good {
+  background: linear-gradient(90deg, #16a34a, #22c55e);
+  box-shadow: 0 0 8px rgba(34,197,94,0.5);
+}
+
+/* Energy bar refined */
+.energy-bar-glow {
+  background: linear-gradient(90deg, #1d4ed8, #60a5fa);
+  box-shadow: 0 0 8px rgba(96,165,250,0.6);
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Floating badge */
+.badge-premium {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Tab pill style */
+.tab-pill {
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.tab-pill-active {
+  background: linear-gradient(135deg, rgba(147,51,234,0.25), rgba(99,102,241,0.15));
+  color: #c084fc;
+  border: 1px solid rgba(147,51,234,0.45);
+  box-shadow: 0 0 12px rgba(147,51,234,0.2);
+}
+.tab-pill-inactive {
+  color: rgba(255,255,255,0.45);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.tab-pill-inactive:hover {
+  color: rgba(255,255,255,0.8);
+  background: rgba(147,51,234,0.08);
+  border-color: rgba(147,51,234,0.2);
+}
+
+/* Vertical divider */
+.v-divider {
+  width: 1px;
+  background: rgba(255,255,255,0.08);
+  align-self: stretch;
+}
+
+/* Shimmer skeleton */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* ─── Premium Dark Gaming Theme ──────────────────── */
+
+/* Cards */
+.bg-surface {
+  background: rgba(4,0,10,0.60) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04) !important;
+  backdrop-filter: blur(12px);
+}
+.bg-surface-2 { background: rgba(8,0,16,0.55) !important; backdrop-filter: blur(12px); }
+.border-border { border-color: rgba(255,255,255,0.08) !important; }
+.text-muted-foreground { color: hsl(224, 12%, 58%) !important; }
+.text-foreground { color: hsl(220, 20%, 95%) !important; }
+
+/* Character card hover */
+.character-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,58,237,0.3) !important;
+}
+
+/* Glow shadows */
+.shadow-glow-purple { box-shadow: 0 0 0 1px rgba(124,58,237,0.35), 0 4px 24px rgba(124,58,237,0.25) !important; }
+.shadow-glow-green  { box-shadow: 0 0 0 1px rgba(52,211,153,0.3), 0 4px 20px rgba(52,211,153,0.2) !important; }
+
+/* HP/Energy bars */
+.hp-bar       { background: linear-gradient(90deg,#dc2626,#f87171); box-shadow: 0 0 10px rgba(220,38,38,0.6); }
+.energy-bar   { background: linear-gradient(90deg,#2563eb,#38bdf8); box-shadow: 0 0 10px rgba(56,189,248,0.6); }
+.hp-bar-glow  { background: linear-gradient(90deg,#dc2626,#f87171); box-shadow: 0 0 8px rgba(220,38,38,0.7); }
+.hp-bar-warn  { background: linear-gradient(90deg,#d97706,#fbbf24); box-shadow: 0 0 8px rgba(251,191,36,0.5); }
+.hp-bar-good  { background: linear-gradient(90deg,#059669,#34d399); box-shadow: 0 0 8px rgba(52,211,153,0.5); }
+.energy-bar-glow { background: linear-gradient(90deg,#2563eb,#38bdf8); box-shadow: 0 0 8px rgba(56,189,248,0.7); }
+
+/* Tab pills */
+.tab-pill-active {
+  background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(99,102,241,0.1)) !important;
+  color: #c4b5fd !important;
+  border: 1px solid rgba(124,58,237,0.45) !important;
+  box-shadow: 0 0 12px rgba(124,58,237,0.2) !important;
+}
+.tab-pill-inactive {
+  color: rgba(255,255,255,0.42) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  background: transparent !important;
+}
+.tab-pill-inactive:hover {
+  color: rgba(255,255,255,0.75) !important;
+  background: rgba(124,58,237,0.08) !important;
+  border-color: rgba(124,58,237,0.25) !important;
+}
+
+/* Section pill */
+.section-pill { letter-spacing: 0.06em; }
+
+/* Skeleton */
+.skeleton {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Rank-1 glow */
+.rank-1-glow {
+  box-shadow: 0 0 0 1px rgba(245,158,11,0.5), 0 0 20px rgba(245,158,11,0.25);
+  animation: goldShimmer 2s ease-in-out infinite;
+}
+
+/* Premium card borders */
+.rounded-2xl.border-border,
+.rounded-xl.border-border {
+  border-color: hsl(224,18%,22%) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* ════════════════════════════════════════════════════
+   PREMIUM 10/10 UTILITIES
+   ════════════════════════════════════════════════════ */
+
+/* Hover-lift micro-interaction for cards/list rows */
+.hover-lift {
+  transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.22s ease,
+              border-color 0.22s ease;
+  will-change: transform;
+}
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+}
+.hover-lift:active { transform: translateY(-1px) scale(0.995); }
+
+/* Subtle row hover (lists) */
+.hover-row {
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+.hover-row:hover {
+  background: rgba(255,255,255,0.05) !important;
+  border-color: rgba(255,255,255,0.14) !important;
+  transform: translateX(2px);
+}
+
+/* Premium gradient button with sheen */
+.btn-sheen { position: relative; overflow: hidden; }
+.btn-sheen::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.22) 50%, transparent 70%);
+  transform: translateX(-130%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+.btn-sheen:hover::after { transform: translateX(130%); }
+
+/* Empty-state floating icon */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+.empty-float { animation: floatY 3.2s ease-in-out infinite; }
+
+/* Soft pulse for "live"/dot indicators */
+@keyframes softPulse {
+  0%, 100% { opacity: 1;   box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
+  50%       { opacity: 0.7; box-shadow: 0 0 0 4px rgba(34,197,94,0); }
+}
+.dot-live { animation: softPulse 1.8s ease-in-out infinite; }
+
+/* Entrance fade-up — for staggered content */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.4s ease both; }
+
+/* Gradient ring focus for inputs */
+.focus-ring {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.focus-ring:focus {
+  outline: none;
+  border-color: rgba(124,58,237,0.5);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.18);
+}
+
+/* Reusable page-header wrapper accent glow */
+.page-header-glow::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at top left, rgba(168,85,247,0.14) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Card focus/hover glow border */
+.card-interactive {
+  transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease, border-color 0.22s ease;
+}
+.card-interactive:hover {
+  transform: translateY(-4px);
+  border-color: rgba(168,85,247,0.4) !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(168,85,247,0.25);
+}
+
+/* Skeleton block shorthand */
+.sk { background: rgba(255,255,255,0.05); border-radius: 12px; position: relative; overflow: hidden; }
+.sk::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+  transform: translateX(-100%);
+  animation: skSweep 1.4s infinite;
+}
+@keyframes skSweep { 100% { transform: translateX(100%); } }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .hover-lift, .hover-row, .empty-float, .dot-live, .fade-up,
+  .btn-sheen::after, .card-interactive, .sk::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

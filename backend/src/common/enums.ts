@@ -1,0 +1,106 @@
+export enum UserRole {
+  USER = 'USER',
+  ADMIN = 'ADMIN',
+  SUPER_ADMIN = 'SUPER_ADMIN',
+}
+
+export enum MasteryTier {
+  BRONZE = 'BRONZE',
+  SILVER = 'SILVER',
+  GOLD = 'GOLD',
+  PLATINUM = 'PLATINUM',
+  DIAMOND = 'DIAMOND',
+}
+
+export enum SkillEffect {
+  FIRE = 'FIRE',
+  WATER = 'WATER',
+  LIGHTNING = 'LIGHTNING',
+  WIND = 'WIND',
+  DARK = 'DARK',
+  LIGHT = 'LIGHT',
+  EARTH = 'EARTH',
+  VOID = 'VOID',
+  RASENGAN = 'RASENGAN',
+  SHARINGAN = 'SHARINGAN',
+  SPIRIT = 'SPIRIT',
+  ICE = 'ICE',
+}
+
+export enum ChatType {
+  ALL = 'ALL',
+  ANIME = 'ANIME',
+  PRIVATE = 'PRIVATE',
+  GUILD = 'GUILD',
+}
+
+export enum WinnerType {
+  MOST_HP = 'MOST_HP',
+  LAST_ALIVE = 'LAST_ALIVE',
+  MOST_KILLS = 'MOST_KILLS',
+}
+
+export enum PaymentMethod {
+  QPAY = 'QPAY',
+  BANK_TRANSFER = 'BANK_TRANSFER',
+}
+
+export enum PaymentStatus {
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
+  REFUNDED = 'REFUNDED',
+}
+
+export enum MiniGameType {
+  REACTION = 'REACTION',
+  QUIZ     = 'QUIZ',
+  DODGE    = 'DODGE',
+  IDENTIFY = 'IDENTIFY',
+}
+
+export enum GuildRole {
+  LEADER = 'LEADER',
+  OFFICER = 'OFFICER',
+  MEMBER = 'MEMBER',
+}
+
+export enum CosmeticType {
+  AVATAR_FRAME = 'AVATAR_FRAME',
+  CHAT_ANIMATION = 'CHAT_ANIMATION',
+  KILL_EFFECT = 'KILL_EFFECT',
+  PROFILE_BACKGROUND = 'PROFILE_BACKGROUND',
+}
+
+export enum WarningSeverity {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  CRITICAL = 'CRITICAL',
+}
+
+export enum ReportStatus {
+  PENDING = 'PENDING',
+  UNDER_REVIEW = 'UNDER_REVIEW',
+  RESOLVED = 'RESOLVED',
+  DISMISSED = 'DISMISSED',
+}
+
+export enum ReputationReason {
+  LIKE_RECEIVED = 'LIKE_RECEIVED',
+  REPORT_CONFIRMED = 'REPORT_CONFIRMED',
+  SPAM_DETECTED = 'SPAM_DETECTED',
+  PROFANITY_DETECTED = 'PROFANITY_DETECTED',
+  FAIR_PLAY_BONUS = 'FAIR_PLAY_BONUS',
+  ADMIN_ADJUSTMENT = 'ADMIN_ADJUSTMENT',
+}
+
+export enum LeaderboardType {
+  WEEKLY_ATTACK = 'WEEKLY_ATTACK',
+  MINI_GAME_DAILY = 'MINI_GAME_DAILY',
+  CHARACTER_MASTERY = 'CHARACTER_MASTERY',
+  ANIME_SPECIFIC = 'ANIME_SPECIFIC',
+  GUILD_RANKING = 'GUILD_RANKING',
+}

@@ -1,0 +1,27 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "worth-it",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "serve", "-l", "4329", "."],
+      "cwd": "D:/projects/anime-platform",
+      "port": 4329
+    },
+    {
+      "name": "Frontend (Next.js)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "D:/projects/anime-platform/frontend",
+      "port": 3000,
+      "autoPort": true
+    },
+    {
+      "name": "Backend (NestJS)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:dev"],
+      "cwd": "D:/projects/anime-platform/backend",
+      "port": 3001
+    }
+  ]
+}
