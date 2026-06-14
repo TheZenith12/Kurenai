@@ -72,3 +72,14 @@ export const font = {
   xxl: 24,
   hero: 32,
 };
+
+// Font families (web-тай ижил) — _layout-д useFonts-ээр ачаална
+export const fonts = {
+  display: 'Bangers_400Regular',     // лого + том гарчиг (web: --font-bangers)
+  condensed: 'BebasNeue_400Regular', // тоо/badge
+  body: 'Inter_400Regular',          // энгийн текст
+  bodyMedium: 'Inter_500Medium',
+  bodySemiBold: 'Inter_600SemiBold',
+  bodyBold: 'Inter_700Bold',
+  bodyBlack: 'Inter_900Black',
+};

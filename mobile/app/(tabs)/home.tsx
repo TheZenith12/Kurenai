@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/auth.store';
 import { seasonApi, attackApi, usersApi } from '../../lib/api';
-import { colors, spacing, radius, font } from '../../constants/theme';
+import { colors, spacing, radius, font, fonts } from '../../constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   heroBannerInner: { flex: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   heroContent: { alignItems: 'center', zIndex: 2 },
   heroKanji: { fontSize: 40, color: colors.primaryLight, fontWeight: '900', opacity: 0.4 },
-  heroTitle: { fontSize: 28, fontWeight: '900', color: colors.text, letterSpacing: 6, marginTop: -8 },
+  heroTitle: { fontFamily: fonts.display, fontSize: 38, color: colors.text, letterSpacing: 5, marginTop: -4 },
   heroSub: { color: colors.textSecondary, fontSize: font.sm, letterSpacing: 2 },
   seasonBadge: { marginTop: spacing.sm, backgroundColor: colors.primary + '33', paddingHorizontal: 12, paddingVertical: 4, borderRadius: radius.full, borderWidth: 1, borderColor: colors.primary + '55' },
   seasonText: { color: colors.primaryLight, fontSize: font.sm, fontWeight: '600' },

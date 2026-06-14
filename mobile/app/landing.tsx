@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Animated, Dimensi
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { colors, spacing, radius, font } from '../constants/theme';
+import { colors, spacing, radius, font, fonts } from '../constants/theme';
 
 const { width } = Dimensions.get('window');
 
@@ -163,7 +163,7 @@ const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: 'transparent' },
   topbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
   logoRow: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
-  logoKurenai: { color: '#ff4444', fontWeight: '900', fontSize: 22, letterSpacing: 2, textShadowColor: 'rgba(220,38,38,0.8)', textShadowRadius: 10 },
+  logoKurenai: { fontFamily: fonts.display, color: '#ff4444', fontSize: 26, letterSpacing: 2, textShadowColor: 'rgba(220,38,38,0.8)', textShadowRadius: 10 },
   logoKanji: { color: '#ff6b35', fontWeight: '900', fontSize: 20 },
   loginPill: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: radius.full, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', backgroundColor: 'rgba(0,0,0,0.3)' },
   loginPillText: { color: 'rgba(255,255,255,0.85)', fontWeight: '700', fontSize: font.sm },
@@ -171,8 +171,8 @@ const s = StyleSheet.create({
   tags: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginTop: spacing.lg, marginBottom: spacing.xl },
   tag: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: radius.full, borderWidth: 1 },
   tagText: { fontWeight: '700', fontSize: font.xs },
-  titleAnime: { textAlign: 'center', color: '#ff2020', fontWeight: '900', fontSize: 72, letterSpacing: 2, lineHeight: 76, textShadowColor: 'rgba(220,38,38,0.85)', textShadowRadius: 24 },
-  titlePlatform: { textAlign: 'center', color: '#3b82f6', fontWeight: '900', fontSize: 54, letterSpacing: 1, lineHeight: 58, textShadowColor: 'rgba(37,99,235,0.8)', textShadowRadius: 22, marginTop: -6 },
+  titleAnime: { fontFamily: fonts.display, textAlign: 'center', color: '#ff2020', fontSize: 84, letterSpacing: 3, lineHeight: 88, textShadowColor: 'rgba(220,38,38,0.85)', textShadowRadius: 24 },
+  titlePlatform: { fontFamily: fonts.display, textAlign: 'center', color: '#3b82f6', fontSize: 60, letterSpacing: 2, lineHeight: 64, textShadowColor: 'rgba(37,99,235,0.8)', textShadowRadius: 22, marginTop: 0 },
   subtitle: { textAlign: 'center', color: 'rgba(255,255,255,0.85)', fontSize: font.lg, lineHeight: 24, marginTop: spacing.lg, paddingHorizontal: spacing.md },
   subStrong: { color: '#fff', fontWeight: '800' },
   subOrange: { color: '#ff6b35', fontWeight: '800' },
@@ -184,10 +184,10 @@ const s = StyleSheet.create({
   ctaSecondaryText: { color: 'rgba(255,255,255,0.75)', fontWeight: '700', fontSize: font.md },
   statsBox: { flexDirection: 'row', justifyContent: 'space-around', marginTop: spacing.xl, padding: spacing.md, borderRadius: radius.xl, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', backgroundColor: 'rgba(0,0,0,0.38)' },
   stat: { alignItems: 'center' },
-  statVal: { color: '#ffd700', fontWeight: '900', fontSize: 24, textShadowColor: 'rgba(255,200,0,0.8)', textShadowRadius: 12 },
+  statVal: { fontFamily: fonts.bodyBlack, color: '#ffd700', fontSize: 26, textShadowColor: 'rgba(255,200,0,0.8)', textShadowRadius: 12 },
   statLbl: { color: 'rgba(255,255,255,0.5)', fontSize: font.xs, marginTop: 2 },
   divider: { height: 1, marginVertical: spacing.xl },
-  sectionTitle: { textAlign: 'center', color: '#fff', fontWeight: '900', fontSize: 26, letterSpacing: 1 },
+  sectionTitle: { fontFamily: fonts.bodyBlack, textAlign: 'center', color: '#fff', fontSize: 24, letterSpacing: 0.5 },
   sectionSub: { textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: font.md, marginTop: 4, marginBottom: spacing.lg },
   featGrid: { gap: spacing.sm },
   featCard: { borderRadius: radius.xl, padding: spacing.md, borderWidth: 1, overflow: 'hidden' },
@@ -203,7 +203,7 @@ const s = StyleSheet.create({
   finalWrap: { marginTop: spacing.xl },
   finalBorder: { borderRadius: radius.xl + 4, padding: 1.5 },
   finalInner: { borderRadius: radius.xl + 3, padding: spacing.xl, alignItems: 'center', backgroundColor: 'rgba(4,0,10,0.92)' },
-  finalTitle: { color: '#fff', fontWeight: '900', fontSize: 24, textAlign: 'center' },
+  finalTitle: { fontFamily: fonts.bodyBlack, color: '#fff', fontSize: 24, textAlign: 'center' },
   finalSub: { color: 'rgba(255,255,255,0.5)', fontSize: font.sm, textAlign: 'center', marginTop: spacing.sm, marginBottom: spacing.lg },
   finalBtn: { borderRadius: radius.xl, overflow: 'hidden', width: '100%' },
   finalBtnInner: { paddingVertical: 15, alignItems: 'center' },
