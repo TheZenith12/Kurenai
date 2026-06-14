@@ -28,6 +28,7 @@ function AppInner() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="index" />
+        <Stack.Screen name="landing" />
         <Stack.Screen name="guild-wars/index" />
         <Stack.Screen name="notifications/index" />
         <Stack.Screen name="search/index" />
