@@ -13,85 +13,93 @@ import { router } from 'expo-router';
 const { width } = Dimensions.get('window');
 const LANE_WIDTH = (width - spacing.md * 2) / 3;
 
-// ─── Reaction Game ────────────────────────────────────────────────────
+// ─── Reaction Game (10s click speed) ──────────────────────────────────
 function ReactionGame({ session, onEnd }: { session: any; onEnd: (score: number) => void }) {
-  const ROUNDS = 5;
-  const delays: number[] = session?.gameData?.delays ?? Array.from({ length: 5 }, () => 2000);
-  const [phase, setPhase] = useState<'wait' | 'go' | 'result'>('wait');
-  const [round, setRound] = useState(0);
-  const [scores, setScores] = useState<number[]>([]);
-  const [lastRt, setLastRt] = useState(0);
-  const startTime = useRef(0);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const totalSecs = Math.round((session?.gameData?.duration ?? 10000) / 1000);
+  const [count, setCount] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(totalSecs);
+  const [started, setStarted] = useState(false);
+  const [done, setDone] = useState(false);
+  const countRef = useRef(0);
   const scale = useRef(new Animated.Value(1)).current;
-  const bgAnim = useRef(new Animated.Value(0)).current;
 
-  const startRound = useCallback(() => {
-    setPhase('wait');
-    bgAnim.setValue(0);
-    const delay = delays[round] ?? 2000;
-    timer.current = setTimeout(() => {
-      setPhase('go');
-      startTime.current = Date.now();
-      Animated.timing(bgAnim, { toValue: 1, duration: 200, useNativeDriver: false }).start();
-      Animated.spring(scale, { toValue: 1.06, useNativeDriver: true, tension: 80 }).start();
-    }, delay);
-  }, [round, delays]);
-
-  useEffect(() => { startRound(); return () => clearTimeout(timer.current); }, [round]);
+  useEffect(() => {
+    if (!started || done) return;
+    const t = setInterval(() => {
+      setTimeLeft((tl) => {
+        if (tl <= 1) {
+          clearInterval(t);
+          setDone(true);
+          setTimeout(() => onEnd(countRef.current), 600);
+          return 0;
+        }
+        return tl - 1;
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [started, done]);
 
   const handleTap = () => {
-    if (phase === 'wait') {
-      clearTimeout(timer.current);
-      Alert.alert('Эрт дарлаа! 😅', 'Ахиад'); setRound((r) => r); startRound(); return;
-    }
-    if (phase !== 'go') return;
-    const rt = Date.now() - startTime.current;
-    setLastRt(rt);
-    const roundScore = Math.max(0, 1000 - rt);
-    const newScores = [...scores, roundScore];
-    setScores(newScores);
-    Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
-    bgAnim.setValue(0);
-    setPhase('result');
-    if (newScores.length >= ROUNDS) {
-      setTimeout(() => onEnd(newScores.reduce((a, b) => a + b, 0)), 1200);
-    } else {
-      setTimeout(() => setRound((r) => r + 1), 1000);
-    }
+    if (done) return;
+    if (!started) setStarted(true);
+    countRef.current += 1;
+    setCount((c) => c + 1);
+    Animated.sequence([
+      Animated.spring(scale, { toValue: 0.93, useNativeDriver: true, tension: 300 }),
+      Animated.spring(scale, { toValue: 1, useNativeDriver: true, tension: 300 }),
+    ]).start();
   };
 
-  const bg = bgAnim.interpolate({ inputRange: [0, 1], outputRange: [colors.bgElevated, '#10B981'] });
+  const pct = (timeLeft / totalSecs) * 100;
+  const barColor = pct > 60 ? colors.success : pct > 30 ? colors.warning : colors.error;
 
   return (
     <View style={rg.root}>
-      <View style={rg.dots}>
-        {Array.from({ length: ROUNDS }).map((_, i) => (
-          <View key={i} style={[rg.dot, i < scores.length && rg.dotDone, i === round && rg.dotActive]} />
-        ))}
+      <View style={rg.hud}>
+        <Text style={rg.timer}>⏱ {timeLeft}с</Text>
+        <Text style={rg.counter}>🖱️ {count}</Text>
       </View>
-      <Text style={rg.scoreText}>⭐ {scores.reduce((a, b) => a + b, 0)}</Text>
-      <TouchableOpacity onPress={handleTap} activeOpacity={0.85}>
-        <Animated.View style={[rg.btn, { backgroundColor: bg, transform: [{ scale }] }]}>
-          <Text style={rg.btnText}>
-            {phase === 'wait' ? '⏳ Хүлээ...' : phase === 'go' ? '⚡ ДАР!' : `✅ ${lastRt}мс`}
-          </Text>
-          {phase === 'result' && <Text style={rg.sub}>+{Math.max(0, 1000 - lastRt)} оноо</Text>}
+      <View style={rg.barBg}>
+        <View style={[rg.barFill, { width: `${pct}%` as any, backgroundColor: barColor }]} />
+      </View>
+      <TouchableOpacity onPress={handleTap} activeOpacity={0.85} disabled={done}>
+        <Animated.View style={[rg.btn, { transform: [{ scale }] }, done && rg.btnDone]}>
+          <LinearGradient colors={done ? [colors.bgElevated, colors.bgElevated] : ['#dc2626', '#7c3aed']} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
+          {!started ? (
+            <>
+              <Text style={rg.bigEmoji}>⚡</Text>
+              <Text style={rg.btnText}>ЭХЛЭХДЭЭ ДАР</Text>
+              <Text style={rg.sub}>{totalSecs} секундэд олон дар!</Text>
+            </>
+          ) : !done ? (
+            <>
+              <Text style={rg.bigCount}>{count}</Text>
+              <Text style={rg.btnText}>💥 ДАР!</Text>
+            </>
+          ) : (
+            <>
+              <Text style={rg.bigEmoji}>✅</Text>
+              <Text style={rg.btnText}>{count} даралт!</Text>
+            </>
+          )}
         </Animated.View>
       </TouchableOpacity>
     </View>
   );
 }
 const rg = StyleSheet.create({
-  root: { alignItems: 'center', gap: spacing.lg },
-  dots: { flexDirection: 'row', gap: spacing.sm },
-  dot: { width: 32, height: 6, borderRadius: 3, backgroundColor: colors.bgElevated, borderWidth: 1, borderColor: colors.border },
-  dotDone: { backgroundColor: '#10B981' },
-  dotActive: { backgroundColor: 'rgba(255,255,255,0.3)' },
-  scoreText: { color: colors.primary, fontWeight: '800', fontSize: font.lg },
-  btn: { width: width - spacing.md * 4, height: 200, borderRadius: radius.xl, alignItems: 'center', justifyContent: 'center', gap: 8 },
-  btnText: { fontSize: 28, fontWeight: '900', color: '#fff', textAlign: 'center' },
-  sub: { fontSize: font.sm, color: 'rgba(255,255,255,0.6)' },
+  root: { gap: spacing.lg },
+  hud: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.sm },
+  timer: { color: colors.text, fontWeight: '900', fontSize: font.xl },
+  counter: { color: colors.primary, fontWeight: '900', fontSize: font.xxl },
+  barBg: { height: 8, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 4, overflow: 'hidden' },
+  barFill: { height: '100%', borderRadius: 4 },
+  btn: { height: 220, borderRadius: radius.xl, alignItems: 'center', justifyContent: 'center', gap: 6, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' },
+  btnDone: { opacity: 0.8 },
+  bigEmoji: { fontSize: 52 },
+  bigCount: { fontSize: 72, fontWeight: '900', color: '#fff', lineHeight: 76 },
+  btnText: { fontSize: 24, fontWeight: '900', color: '#fff', textAlign: 'center' },
+  sub: { fontSize: font.sm, color: 'rgba(255,255,255,0.7)' },
 });
 
 // ─── Anime Quiz Game ──────────────────────────────────────────────────
@@ -501,6 +509,7 @@ export default function GamesScreen() {
   const [activeType, setActiveType] = useState<GameType | null>(null);
   const [session, setSession] = useState<any>(null);
   const [tab, setTab] = useState(0);
+  const gameStartRef = useRef(Date.now());
 
   const { data: games = [], isLoading: gamesLoading } = useQuery({ queryKey: ['mini-games'], queryFn: gameApi.getGames });
   const { data: lb = [], isLoading: lbLoading } = useQuery({ queryKey: ['gameLb'], queryFn: () => leaderboardApi.getMiniGame('daily') });
@@ -512,6 +521,7 @@ export default function GamesScreen() {
       const game = (games as any[]).find((g: any) => g.id === gameId);
       setSession({ ...data, gameType: game?.type });
       setActiveType(game?.type as GameType);
+      gameStartRef.current = Date.now(); // session эхэлсэн бодит цаг
     },
     onError: (e: any) => Alert.alert('Алдаа', e?.response?.data?.message ?? 'Тоглоом эхлүүлэхэд алдаа'),
   });
@@ -523,12 +533,13 @@ export default function GamesScreen() {
       setSession(null);
       Alert.alert('🎮 Тоглоом дууслаа!', data.message ?? `+${data.reward ?? 0} AP`, [{ text: 'OK' }]);
     },
-    onError: () => { setActiveType(null); setSession(null); },
+    onError: (e: any) => { setActiveType(null); setSession(null); Alert.alert('Алдаа', e?.response?.data?.message ?? 'Үр дүн хадгалахад алдаа гарлаа'); },
   });
 
   const handleGameEnd = useCallback((score: number) => {
     if (!session) return;
-    endMut.mutate({ sessionToken: session.sessionToken, score, duration: Date.now() - (session.startedAt ?? Date.now()) });
+    // Серверийн session-той таарах бодит өнгөрсөн хугацаа
+    endMut.mutate({ sessionToken: session.sessionToken, score, duration: Date.now() - gameStartRef.current });
   }, [session]);
 
   const ActiveComp = activeType ? GameComponent[activeType] : null;

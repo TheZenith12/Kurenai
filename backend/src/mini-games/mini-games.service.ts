@@ -42,17 +42,17 @@ export class MiniGamesService {
   private readonly logger = new Logger(MiniGamesService.name);
 
   private readonly minDurations: Record<string, number> = {
-    REACTION: 1000,
+    REACTION: 8000,   // 10 секундын click тоглоом — эрт дуусгаж болохгүй
     QUIZ:     8000,
     DODGE:    5000,
     IDENTIFY: 8000,
   };
 
   private readonly maxScores: Record<string, number> = {
-    REACTION: 5000,
-    QUIZ:     1000,
-    DODGE:    1500,
-    IDENTIFY: 1000,
+    REACTION: 250,    // 10 секундэд дарах боломжит дээд тоо
+    QUIZ:     1000,   // 5 асуулт × 200
+    DODGE:    3000,   // ~16 саад × 100 + нөөц
+    IDENTIFY: 1000,   // 5 дүр × 200
   };
 
   // ─── Quiz question pool ──────────────────────────────────────────────
@@ -277,7 +277,8 @@ export class MiniGamesService {
 
     switch (gameType) {
       case 'REACTION':
-        return { delays: Array.from({ length: 5 }, () => Math.floor(rng() * 3000) + 500) };
+        // 10 секундэд аль болох олон дарах тоглоом
+        return { duration: 10000 };
 
       case 'QUIZ': {
         const shuffled = [...this.quizPool].sort(() => rng() - 0.5);

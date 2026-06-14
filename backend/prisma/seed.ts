@@ -915,7 +915,7 @@ async function main() {
       {
         id: 'reaction-game',
         name: 'Хурдан Дарах',
-        description: 'Дэлгэцэнд гарах дохиог аль болох хурдан дарна уу!',
+        description: '10 секундэд аль болох олон удаа дарна уу!',
         type: MiniGameType.REACTION,
         maxReward: 50, minReward: 5, cooldownMin: 30, dailyCap: 300, sortOrder: 1,
       },

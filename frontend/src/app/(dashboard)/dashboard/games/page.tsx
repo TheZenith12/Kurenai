@@ -9,83 +9,83 @@ import clsx from 'clsx';
 
 type GameTab = 'games' | 'leaderboard' | 'stats';
 
-// ─── Reaction Game ────────────────────────────────────────────────────
+// ─── Reaction Game (10s click speed) ──────────────────────────────────
 
 function ReactionGame({ gameData, onEnd }: { gameData: any; onEnd: (score: number, duration: number) => void }) {
-  const ROUNDS = 5;
-  const delays: number[] = gameData.delays ?? Array.from({ length: 5 }, () => 2000);
-  const [phase, setPhase] = useState<'waiting' | 'ready' | 'clicked'>('waiting');
-  const [clickTime, setClickTime] = useState<number | null>(null);
-  const [startTime, setStartTime] = useState<number | null>(null);
-  const [score, setScore] = useState(0);
-  const [round, setRound] = useState(0);
+  const durationMs: number = gameData?.duration ?? 10000;
+  const totalSecs = Math.round(durationMs / 1000);
+  const [count, setCount] = useState(0);
+  const [started, setStarted] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(totalSecs);
+  const countRef = useRef(0);
   const startRef = useRef(Date.now());
 
   useEffect(() => {
-    const delay = delays[round] ?? 2000;
-    const t = setTimeout(() => { setPhase('ready'); setStartTime(Date.now()); }, delay);
-    return () => clearTimeout(t);
-  }, [round]);
+    if (!started) return;
+    startRef.current = Date.now();
+    const timer = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 1) {
+          clearInterval(timer);
+          onEnd(countRef.current, Date.now() - startRef.current);
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [started]);
 
   const handleClick = () => {
-    if (phase === 'waiting') { toast.error('Хэтэрхий эрт! -100'); setScore((s) => s - 100); return; }
-    if (phase !== 'ready') return;
-    const rt = Date.now() - (startTime ?? Date.now());
-    const roundScore = Math.max(0, 1000 - rt);
-    const newScore = score + roundScore;
-    setScore(newScore);
-    setClickTime(rt);
-    setPhase('clicked');
-    if (round >= ROUNDS - 1) {
-      setTimeout(() => onEnd(newScore, Date.now() - startRef.current), 1400);
-    } else {
-      setTimeout(() => { setRound((r) => r + 1); setPhase('waiting'); setClickTime(null); setStartTime(null); }, 1400);
-    }
+    if (timeLeft === 0) return;
+    if (!started) { setStarted(true); }
+    countRef.current += 1;
+    setCount((c) => c + 1);
   };
 
-  const phaseBg = phase === 'ready'
-    ? 'bg-emerald-500/20 border-emerald-400/60'
-    : phase === 'clicked'
-    ? 'bg-purple-500/10 border-purple-400/30'
-    : 'bg-white/[0.03] border-white/10';
+  const pct = (timeLeft / totalSecs) * 100;
+  const barColor = pct > 60 ? '#10b981' : pct > 30 ? '#f59e0b' : '#ef4444';
 
   return (
     <div className="space-y-5">
+      {/* HUD */}
       <div className="flex justify-between items-center">
-        <div className="flex gap-1.5">
-          {Array.from({ length: ROUNDS }).map((_, i) => (
-            <div key={i} className={clsx('h-2 w-8 rounded-full transition-all duration-300',
-              i < round ? 'bg-emerald-400' : i === round ? 'bg-white/40' : 'bg-white/10')} />
-          ))}
-        </div>
-        <span className="font-black text-white/70">⭐ {score}</span>
+        <span className="text-2xl font-black text-white/80">⏱ {timeLeft}с</span>
+        <span className="text-3xl font-black text-accent">🖱️ {count}</span>
       </div>
 
-      <motion.div
+      {/* Timer bar */}
+      <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+        <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${pct}%`, backgroundColor: barColor }} />
+      </div>
+
+      <motion.button
         onClick={handleClick}
-        whileTap={{ scale: 0.97 }}
-        className={clsx('w-full h-52 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer select-none transition-all duration-200', phaseBg)}
+        disabled={timeLeft === 0}
+        whileTap={{ scale: 0.95 }}
+        className={clsx(
+          'w-full h-56 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer select-none transition-colors',
+          timeLeft === 0 ? 'bg-white/[0.03] border-white/10' : 'bg-primary/15 border-primary/40 hover:bg-primary/25',
+        )}
       >
-        {phase === 'waiting' && (
-          <motion.div animate={{ opacity: [1, 0.4, 1] }} transition={{ repeat: Infinity, duration: 1.4 }} className="text-center">
-            <p className="text-5xl mb-3">⏳</p>
-            <p className="text-white/40 font-bold">Хүлээ...</p>
-          </motion.div>
-        )}
-        {phase === 'ready' && (
-          <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
+        {!started ? (
+          <>
             <p className="text-5xl mb-3">⚡</p>
-            <p className="text-emerald-300 text-3xl font-black tracking-wide">ДАРНА УУ!</p>
-          </motion.div>
+            <p className="text-white text-2xl font-black">ЭХЛЭХДЭЭ ДАР</p>
+            <p className="text-white/40 mt-1 text-sm">{totalSecs} секундэд аль болох олон дар!</p>
+          </>
+        ) : timeLeft > 0 ? (
+          <>
+            <p className="text-6xl font-black text-white leading-none">{count}</p>
+            <p className="text-primary-glow text-2xl font-black mt-2">💥 ДАР!</p>
+          </>
+        ) : (
+          <>
+            <p className="text-5xl mb-2">✅</p>
+            <p className="text-white text-2xl font-black">{count} даралт!</p>
+          </>
         )}
-        {phase === 'clicked' && clickTime != null && (
-          <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-center">
-            <p className="text-4xl font-black text-white">{clickTime}мс</p>
-            <p className="text-white/40 mt-1">+{Math.max(0, 1000 - clickTime)} оноо</p>
-          </motion.div>
-        )}
-      </motion.div>
-      <p className="text-center text-xs text-white/30">Раунд {round + 1} / {ROUNDS}</p>
+      </motion.button>
     </div>
   );
 }
